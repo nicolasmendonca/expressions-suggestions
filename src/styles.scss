@@ -1,0 +1,54 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+$width: 270px;
+$focusBgColor: #F5F5F5;
+$fieldTextColor: #808080;
+
+.Expression-Field {
+  position: relative;
+
+  &__input {
+      box-sizing: border-box;
+      height: 30px;
+      width: $width;
+      border: 2px solid #CCCCCC;
+      border-radius: 4px;
+      line-height: 24px;
+      text-align: left;
+      padding: 0 12px;
+    }
+
+    .Expression-Suggestion-List {
+      box-sizing: border-box;
+      border-radius: 4px;
+      border: 1px solid #E8E8E8;
+      position: absolute;
+      width: $width;
+      top: 100%;
+      left: 0;
+      margin: 0;
+      list-style: none;
+      padding: 0;
+      max-height: 100px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .Expression-Suggestion-List-Item {
+      line-height: 24px;
+      text-align: left;
+      padding: 0 12px;
+      cursor: pointer;
+
+      &.hasFocus {
+        background-color: $focusBgColor;
+      }
+
+      & .grey {
+        color: $fieldTextColor;
+      }
+    }
+}
