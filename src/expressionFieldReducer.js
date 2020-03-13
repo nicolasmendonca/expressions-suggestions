@@ -31,8 +31,7 @@ export const expressionFieldReducer = (state = initialState, action) => {
     case "SUGGESTION_CLICKED":
       return {
         ...state,
-        isInputFocused: false,
-        inputContent: action.payload.function
+        inputContent: action.payload
       };
     case "SUGGESTION_FOCUSED":
       return {

@@ -4,7 +4,7 @@ import Fuse from "fuse.js";
 import ExpressionSuggestions from "./ExpressionSuggestions";
 import { suggestions, KEYBOARD_KEYS } from "./constants";
 import { expressionFieldReducer } from "./expressionFieldReducer";
-import { getCaretPosition } from "./utils";
+import { getCaretPosition, setCaretPosition2 } from "./utils";
 
 class ExpressionField extends React.Component {
   constructor(props) {
@@ -29,9 +29,9 @@ class ExpressionField extends React.Component {
       minMatchCharLength: 1,
       keys: ["function"]
     };
-    const cleanSearchText = this.inputRef.current.innerText;
+    const [, , cleanSearchText] = this.getSuggestionText();
     const matches = new Fuse(suggestions, options).search(cleanSearchText);
-    return matches;
+    return cleanSearchText.length === 0 ? suggestions : matches;
   }
 
   dispatchEvent = (action, callback) => {
@@ -69,8 +69,38 @@ class ExpressionField extends React.Component {
     );
   };
 
+  getSuggestionText = () => {
+    const { innerText } = this.inputRef.current;
+    const cursorPosition = getCaretPosition(this.inputRef.current);
+    for (let i = cursorPosition; i >= 0; i--) {
+      if (innerText.charAt(i) === "(") {
+        if (i === cursorPosition) return [i, cursorPosition, ""];
+        return [i, cursorPosition, innerText.substring(i + 1, cursorPosition)];
+      }
+    }
+    return [0, cursorPosition, innerText];
+  };
+
   handleSuggestionClicked = suggestion => {
-    this.dispatchEvent({ type: "SUGGESTION_CLICKED", payload: suggestion });
+    const { innerText } = this.inputRef.current;
+    const [start, end] = this.getSuggestionText();
+    const leftText = innerText.substring(0, start);
+    const rightText = innerText.substring(end);
+    const newExpression =
+      start === 0
+        ? [`${leftText}${suggestion.functionName}(`, `)${rightText}`]
+        : [`${leftText}(${suggestion.functionName}(`, `)${rightText}`];
+    debugger;
+    this.dispatchEvent(
+      { type: "SUGGESTION_CLICKED", payload: newExpression.join("") },
+      () => {
+        setTimeout(() => {
+          this.inputRef.current.focus();
+          setCaretPosition2(this.inputRef.current, newExpression[0].length);
+        }, 0);
+        // setCurrentCursorPosition(newExpression[0].length, this.inputRef.current);
+      }
+    );
   };
 
   handleSuggestionFocusChange = index => {
@@ -78,6 +108,7 @@ class ExpressionField extends React.Component {
   };
 
   focusOnActiveSuggestion = () => {
+    if (!this.listRef.current) return;
     this.listRef.current
       .querySelector(".hasFocus")
       .scrollIntoView({ block: "center" });
