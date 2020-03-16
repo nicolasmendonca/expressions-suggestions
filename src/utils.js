@@ -24,17 +24,8 @@ export function getCaretPosition(editableDiv) {
   return caretPos;
 }
 
-export function setCaretPosition(element, initialPosition) {
-  var range = document.createRange();
-  var sel = window.getSelection();
-  range.setStart(element, initialPosition);
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
-
 // Move caret to a specific point in a DOM element
-export function setCaretPosition2(el, pos) {
+export function setCaretPosition(el, pos) {
   // Loop through all child nodes
   for (var node of el.childNodes) {
     if (node.nodeType === 3) {

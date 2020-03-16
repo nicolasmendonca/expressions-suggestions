@@ -3,18 +3,11 @@ import classNames from "classnames";
 
 class Suggestion extends React.PureComponent {
   get suggestionHTML() {
-    let currentFieldNumber = 1;
-    let functionText = this.props.suggestion.function;
-
-    while (functionText.includes("%")) {
-      functionText = functionText.replace(
-        "%",
-        `<span class="grey">[field_${currentFieldNumber}]</span>`
-      );
-      currentFieldNumber++;
-    }
-
-    return functionText;
+    const { suggestion } = this.props;
+    let argumentsHTML = suggestion.arguments
+      .map(argument => `<span class="grey">[${argument.name}]</span>`)
+      .join(", ");
+    return `${suggestion.functionName}(${argumentsHTML})`;
   }
 
   handleMouseDown = e => {
