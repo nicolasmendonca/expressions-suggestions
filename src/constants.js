@@ -1,39 +1,108 @@
 export const suggestions = [
   {
     id: 1,
-    function: "LENGTH(%)",
-    functionName: "LENGTH"
+    functionName: "LENGTH",
+    description: "Returns the amount of elements inside a list or string",
+    arguments: [
+      {
+        name: "field",
+        description: "field that contains certain amount of elements"
+      }
+    ]
   },
   {
     id: 2,
-    function: "CONCATENATE(%, %)",
-    functionName: "CONCATENATE"
+    functionName: "CONCATENATE",
+    description: "Prints two fields together",
+    arguments: [
+      {
+        name: "Field_1",
+        description: "field that will be prepended with another value"
+      },
+      {
+        name: "Field_2",
+        description: "field that will be appended with another value"
+      }
+    ]
   },
   {
     id: 3,
-    function: "ADD(%, %)",
-    functionName: "ADD"
+    functionName: "ADD",
+    description: "Performs the addition of two values",
+    arguments: [
+      {
+        name: "Augend",
+        description: "Numeric value"
+      },
+      {
+        name: "Addend",
+        description: "numeric value"
+      }
+    ]
   },
   {
     id: 4,
-    function: "SUBTRACT(%, %)",
-    functionName: "SUBTRACT"
+    functionName: "SUBTRACT",
+    description: "Performs the subtraction of two numbers",
+    arguments: [
+      {
+        name: "Subtrahend",
+        description: "Numeric value"
+      },
+      {
+        name: "Minuend",
+        description: "Numeric value"
+      }
+    ]
   },
   {
     id: 5,
-    function: "MULTIPLY(%, %)",
-    functionName: "MULTIPLY"
+    functionName: "MULTIPLY",
+    description: "Performs the multiplication of two values",
+    arguments: [
+      {
+        name: "Multiplicand",
+        description: "Numeric value"
+      },
+      {
+        name: "Multiplier",
+        description: "Numeric value"
+      }
+    ]
   },
   {
     id: 6,
-    function: "DIVIDE(%, %)",
-    functionName: "DIVIDE"
+    functionName: "DIVIDE",
+    description: "Performs the division of two numbers",
+    arguments: [
+      {
+        name: "Dividend",
+        description: "Numeric value"
+      },
+      {
+        name: "Divisor",
+        description: "Numeric value"
+      }
+    ]
+  }
+];
+
+export const fields = [
+  {
+    id: 1,
+    field: "job_title"
+  },
+  {
+    id: 2,
+    field: "job_description"
   }
 ];
 
 export const KEYBOARD_KEYS = {
   DOWN_ARROW: 40,
   UP_ARROW: 38,
+  LEFT_ARROW: 37,
+  RIGHT_ARROW: 39,
   ENTER: 13,
   OPEN_PARENTHESIS: 57
 };

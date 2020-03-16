@@ -6,12 +6,10 @@ import { suggestions, KEYBOARD_KEYS, variableSplitters } from "./constants";
 import { expressionFieldReducer } from "./expressionFieldReducer";
 import {
   getCaretPosition,
-  setCaretPosition2,
+  setCaretPosition,
   getCurrentExpressionFunction
 } from "./utils";
-
-const sanitizeFunctionName = functionName =>
-  functionName.replace(/(\s|,|\.|\(|\))/g, _val => "");
+import FunctionDetails from "./FunctionDetails";
 
 class ExpressionField extends React.Component {
   constructor(props) {
@@ -37,18 +35,24 @@ class ExpressionField extends React.Component {
       distance: 100,
       maxPatternLength: 32,
       minMatchCharLength: 1,
-      keys: ["function"]
+      keys: ["functionName"]
     };
-    const [, , cleanSearchText] = this.getSuggestionText();
+    const [, , cleanSearchText] = this.getActiveWrittenFunction();
     const matches = new Fuse(suggestions, options).search(cleanSearchText);
     return cleanSearchText.length === 0 ? suggestions : matches;
   }
 
-  get currentFunction() {
+  get currentFunctionName() {
     if (!this.inputRef.current) return null;
     const { innerText } = this.inputRef.current;
     const cursorPosition = getCaretPosition(this.inputRef.current);
     return getCurrentExpressionFunction(innerText, cursorPosition);
+  }
+
+  get currentFunction() {
+    const { currentFunctionName } = this;
+    if (!currentFunctionName) return null;
+    return suggestions.find(sugg => sugg.functionName === currentFunctionName);
   }
 
   componentDidMount() {
@@ -79,7 +83,7 @@ class ExpressionField extends React.Component {
         type: "CURSOR_POSITION_CHANGED",
         payload: getCaretPosition(this.inputRef.current)
       });
-    }, 0);
+    }, 50);
 
   /** @param {FocusEvent} e */
   handleInputFocus = e => {
@@ -104,13 +108,29 @@ class ExpressionField extends React.Component {
   };
 
   shouldRenderFunctionSuggestions = () => {
+    const activeWrittenFunction = this.getActiveWrittenFunction();
     return (
       this.state.isInputFocused &&
+      activeWrittenFunction[2] &&
+      !activeWrittenFunction[2].includes("[") &&
+      !activeWrittenFunction[2].includes('"') &&
+      !activeWrittenFunction[2].includes("'") &&
       this.state.filteredFunctionSuggestions.length > 0
     );
   };
 
-  getSuggestionText = () => {
+  shouldRenderFunctionDetails = () => {
+    const { currentFunction } = this;
+    const activeWrittenFunction = this.getActiveWrittenFunction();
+
+    return (
+      this.state.isInputFocused &&
+      currentFunction &&
+      (!activeWrittenFunction[2] || !this.shouldRenderFunctionSuggestions())
+    );
+  };
+
+  getActiveWrittenFunction = () => {
     if (!this.inputRef.current) return [0, 0, ""];
     const { innerText } = this.inputRef.current;
     const cursorPosition = getCaretPosition(this.inputRef.current);
@@ -126,7 +146,7 @@ class ExpressionField extends React.Component {
 
   handleSuggestionClicked = suggestion => {
     const { innerText } = this.inputRef.current;
-    const [start, end] = this.getSuggestionText();
+    const [start, end] = this.getActiveWrittenFunction();
     const leftText = innerText.substring(0, start === 0 ? start : start + 1);
     const rightText = innerText.substring(end);
     const newExpression = [
@@ -139,8 +159,8 @@ class ExpressionField extends React.Component {
       () => {
         setTimeout(() => {
           this.inputRef.current.focus();
-          setCaretPosition2(this.inputRef.current, newExpression[0].length);
-        }, 0);
+          setCaretPosition(this.inputRef.current, newExpression[0].length);
+        }, 50);
       }
     );
     this.handleCaretChange();
@@ -180,7 +200,7 @@ class ExpressionField extends React.Component {
   };
 
   insertFunction = () => {
-    const [, , suggestionText] = this.getSuggestionText();
+    const [, , suggestionText] = this.getActiveWrittenFunction();
     this.handleSuggestionClicked({ functionName: suggestionText });
     this.handleCaretChange();
   };
@@ -197,6 +217,9 @@ class ExpressionField extends React.Component {
       case KEYBOARD_KEYS.UP_ARROW:
         e.preventDefault();
         return this.selectPreviousSuggestion();
+      case KEYBOARD_KEYS.RIGHT_ARROW:
+      case KEYBOARD_KEYS.LEFT_ARROW:
+        return this.handleCaretChange();
       case KEYBOARD_KEYS.OPEN_PARENTHESIS:
         e.preventDefault();
         return this.insertFunction();
@@ -229,6 +252,9 @@ class ExpressionField extends React.Component {
             onSuggestionFocusChange={this.handleSuggestionFocusChange}
             focusedSuggestionIndex={this.focusedSuggestion}
           />
+        )}
+        {this.shouldRenderFunctionDetails() && (
+          <FunctionDetails functionExpression={this.currentFunction} />
         )}
       </div>
     );
