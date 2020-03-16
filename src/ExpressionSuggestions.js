@@ -17,13 +17,13 @@ class Suggestion extends React.PureComponent {
     return functionText;
   }
 
+  handleMouseDown = e => {
+    e.preventDefault();
+    this.props.onSuggestionClicked(this.props.suggestion);
+  };
+
   render() {
-    const {
-      suggestion,
-      onSuggestionFocusChange,
-      onSuggestionClicked,
-      hasFocus
-    } = this.props;
+    const { suggestion, onSuggestionFocusChange, hasFocus } = this.props;
     return (
       <li
         className={classNames("Expression-Suggestion-List-Item", {
@@ -31,7 +31,7 @@ class Suggestion extends React.PureComponent {
         })}
         key={suggestion.id}
         onMouseEnter={onSuggestionFocusChange}
-        onMouseDown={() => onSuggestionClicked(suggestion)}
+        onMouseDown={this.handleMouseDown}
         dangerouslySetInnerHTML={{ __html: this.suggestionHTML }}
       />
     );

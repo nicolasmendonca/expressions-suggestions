@@ -60,3 +60,39 @@ export function setCaretPosition2(el, pos) {
   }
   return pos; // needed because of recursion stuff
 }
+
+const variableSplitters = [" ", ",", "(", ")"];
+
+export const getCurrentExpressionFunction = (expression, cursorPosition) => {
+  let functionEndPosition = 0;
+  let functionStartPosition = 0;
+  let parenthesisToIgnore = 0;
+  for (let i = cursorPosition - 1; i >= 0; i--) {
+    if (expression.charAt(i) === ")") {
+      parenthesisToIgnore++;
+      continue;
+    }
+
+    if (expression.charAt(i) === "(") {
+      if (parenthesisToIgnore > 0) {
+        parenthesisToIgnore--;
+        continue;
+      }
+
+      functionEndPosition = i;
+      break;
+    }
+  }
+
+  for (let i = functionEndPosition - 1; i >= 0; i--) {
+    if (variableSplitters.includes(expression.charAt(i))) {
+      functionStartPosition = i;
+      break;
+    }
+  }
+
+  return expression.substring(
+    functionStartPosition === 0 ? 0 : functionStartPosition + 1,
+    functionEndPosition
+  );
+};

@@ -4,7 +4,8 @@ const initialState = {
   isInputFocused: false,
   inputContent: "",
   focusedSuggestion: 0,
-  filteredSuggestions: suggestions
+  filteredFunctionSuggestions: suggestions,
+  cursorPosition: 0
 };
 
 export const expressionFieldReducer = (state = initialState, action) => {
@@ -13,7 +14,8 @@ export const expressionFieldReducer = (state = initialState, action) => {
       return {
         ...state,
         isInputFocused: true,
-        focusedSuggestion: state.filteredSuggestions.length === 0 ? -1 : 0
+        focusedSuggestion:
+          state.filteredFunctionSuggestions.length === 0 ? -1 : 0
       };
     case "INPUT_BLURRED":
       return {
@@ -21,12 +23,13 @@ export const expressionFieldReducer = (state = initialState, action) => {
         isInputFocused: false
       };
     case "USER_INPUT":
-      const filteredSuggestions = action.payload.filteredSuggestions;
+      const filteredFunctionSuggestions =
+        action.payload.filteredFunctionSuggestions;
       return {
         ...state,
-        focusedSuggestion: filteredSuggestions.length === 0 ? -1 : 0,
+        focusedSuggestion: filteredFunctionSuggestions.length === 0 ? -1 : 0,
         inputContent: action.payload.inputValue,
-        filteredSuggestions
+        filteredFunctionSuggestions
       };
     case "SUGGESTION_CLICKED":
       return {
@@ -37,6 +40,11 @@ export const expressionFieldReducer = (state = initialState, action) => {
       return {
         ...state,
         focusedSuggestion: action.payload
+      };
+    case "CURSOR_POSITION_CHANGED":
+      return {
+        ...state,
+        cursorPosition: action.payload
       };
     default:
       return state;

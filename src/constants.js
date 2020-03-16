@@ -11,38 +11,31 @@ export const suggestions = [
   },
   {
     id: 3,
-    function: "LENGTH(%)",
-    functionName: "LENGTH"
+    function: "ADD(%, %)",
+    functionName: "ADD"
   },
   {
     id: 4,
-    function: "CONCATENATE(%, %)",
-    functionName: "CONCATENATE"
+    function: "SUBTRACT(%, %)",
+    functionName: "SUBTRACT"
   },
   {
     id: 5,
-    function: "LENGTH(%)",
-    functionName: "LENGTH"
+    function: "MULTIPLY(%, %)",
+    functionName: "MULTIPLY"
   },
   {
     id: 6,
-    function: "CONCATENATE(%, %)",
-    functionName: "CONCATENATE"
-  },
-  {
-    id: 7,
-    function: "LENGTH(%)",
-    functionName: "LENGTH"
-  },
-  {
-    id: 8,
-    function: "CONCATENATE(%, %)",
-    functionName: "CONCATENATE"
+    function: "DIVIDE(%, %)",
+    functionName: "DIVIDE"
   }
 ];
 
 export const KEYBOARD_KEYS = {
   DOWN_ARROW: 40,
   UP_ARROW: 38,
-  ENTER: 13
+  ENTER: 13,
+  OPEN_PARENTHESIS: 57
 };
+
+export const variableSplitters = [" ", ",", "(", ")"];

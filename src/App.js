@@ -5,7 +5,6 @@ import "./styles.scss";
 export default function App() {
   return (
     <div className="App">
-      <p>(escribi "CONCAT")</p>
       <ExpressionField />
     </div>
   );

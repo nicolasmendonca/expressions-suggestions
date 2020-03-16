@@ -2,9 +2,16 @@ import React from "react";
 import ContentEditable from "react-contenteditable";
 import Fuse from "fuse.js";
 import ExpressionSuggestions from "./ExpressionSuggestions";
-import { suggestions, KEYBOARD_KEYS } from "./constants";
+import { suggestions, KEYBOARD_KEYS, variableSplitters } from "./constants";
 import { expressionFieldReducer } from "./expressionFieldReducer";
-import { getCaretPosition, setCaretPosition2 } from "./utils";
+import {
+  getCaretPosition,
+  setCaretPosition2,
+  getCurrentExpressionFunction
+} from "./utils";
+
+const sanitizeFunctionName = functionName =>
+  functionName.replace(/(\s|,|\.|\(|\))/g, _val => "");
 
 class ExpressionField extends React.Component {
   constructor(props) {
@@ -13,13 +20,16 @@ class ExpressionField extends React.Component {
     this.inputRef = React.createRef();
     this.listRef = React.createRef();
     this.state = expressionFieldReducer(undefined, {});
+
+    this.eventsToSubscribeForCaretChange =
+      "keypress mousedown touchstart input paste cut mousemove select selectstart";
   }
 
   get focusedSuggestion() {
     return this.state.focusedSuggestion;
   }
 
-  get filteredSuggestions() {
+  get filteredFunctionSuggestions() {
     const options = {
       shouldSort: true,
       threshold: 0.6,
@@ -34,6 +44,27 @@ class ExpressionField extends React.Component {
     return cleanSearchText.length === 0 ? suggestions : matches;
   }
 
+  get currentFunction() {
+    if (!this.inputRef.current) return null;
+    const { innerText } = this.inputRef.current;
+    const cursorPosition = getCaretPosition(this.inputRef.current);
+    return getCurrentExpressionFunction(innerText, cursorPosition);
+  }
+
+  componentDidMount() {
+    if (!this.inputRef.current) throw new Error("Input ref is not set");
+
+    this.eventsToSubscribeForCaretChange.split(" ").forEach(event => {
+      this.inputRef.current.addEventListener(event, this.handleCaretChange);
+    });
+  }
+
+  componentWillUnmount() {
+    this.eventsToSubscribeForCaretChange.split(" ").forEach(event => {
+      this.inputRef.current.removeEventListener(event, this.handleCaretChange);
+    });
+  }
+
   dispatchEvent = (action, callback) => {
     const prevState = this.state;
     this.setState(expressionFieldReducer(prevState, action), (...params) => {
@@ -42,8 +73,17 @@ class ExpressionField extends React.Component {
     });
   };
 
+  handleCaretChange = () =>
+    setTimeout(() => {
+      this.dispatchEvent({
+        type: "CURSOR_POSITION_CHANGED",
+        payload: getCaretPosition(this.inputRef.current)
+      });
+    }, 0);
+
   /** @param {FocusEvent} e */
   handleInputFocus = e => {
+    e.persist();
     this.dispatchEvent({ type: "INPUT_FOCUSED" });
   };
 
@@ -58,22 +98,25 @@ class ExpressionField extends React.Component {
       type: "USER_INPUT",
       payload: {
         inputValue: e.target.value,
-        filteredSuggestions: this.filteredSuggestions
+        filteredFunctionSuggestions: this.filteredFunctionSuggestions
       }
     });
   };
 
-  shouldRenderSuggestions = () => {
+  shouldRenderFunctionSuggestions = () => {
     return (
-      this.state.isInputFocused && this.state.filteredSuggestions.length > 0
+      this.state.isInputFocused &&
+      this.state.filteredFunctionSuggestions.length > 0
     );
   };
 
   getSuggestionText = () => {
+    if (!this.inputRef.current) return [0, 0, ""];
     const { innerText } = this.inputRef.current;
     const cursorPosition = getCaretPosition(this.inputRef.current);
-    for (let i = cursorPosition; i >= 0; i--) {
-      if (innerText.charAt(i) === "(") {
+    if (cursorPosition === 0) return [0, 0, ""];
+    for (let i = cursorPosition - 1; i >= 0; i--) {
+      if (variableSplitters.includes(innerText.charAt(i))) {
         if (i === cursorPosition) return [i, cursorPosition, ""];
         return [i, cursorPosition, innerText.substring(i + 1, cursorPosition)];
       }
@@ -84,13 +127,13 @@ class ExpressionField extends React.Component {
   handleSuggestionClicked = suggestion => {
     const { innerText } = this.inputRef.current;
     const [start, end] = this.getSuggestionText();
-    const leftText = innerText.substring(0, start);
+    const leftText = innerText.substring(0, start === 0 ? start : start + 1);
     const rightText = innerText.substring(end);
-    const newExpression =
-      start === 0
-        ? [`${leftText}${suggestion.functionName}(`, `)${rightText}`]
-        : [`${leftText}(${suggestion.functionName}(`, `)${rightText}`];
-    debugger;
+    const newExpression = [
+      `${leftText}${suggestion.functionName}(`,
+      `)${rightText}`
+    ];
+
     this.dispatchEvent(
       { type: "SUGGESTION_CLICKED", payload: newExpression.join("") },
       () => {
@@ -98,9 +141,9 @@ class ExpressionField extends React.Component {
           this.inputRef.current.focus();
           setCaretPosition2(this.inputRef.current, newExpression[0].length);
         }, 0);
-        // setCurrentCursorPosition(newExpression[0].length, this.inputRef.current);
       }
     );
+    this.handleCaretChange();
   };
 
   handleSuggestionFocusChange = index => {
@@ -110,13 +153,13 @@ class ExpressionField extends React.Component {
   focusOnActiveSuggestion = () => {
     if (!this.listRef.current) return;
     this.listRef.current
-      .querySelector(".hasFocus")
+      .querySelector(".hasFocus") // @TODO FIx
       .scrollIntoView({ block: "center" });
   };
 
   selectNextSuggestion = () => {
-    const { filteredSuggestions, focusedSuggestion } = this.state;
-    const target = filteredSuggestions[focusedSuggestion + 1]
+    const { filteredFunctionSuggestions, focusedSuggestion } = this.state;
+    const target = filteredFunctionSuggestions[focusedSuggestion + 1]
       ? focusedSuggestion + 1
       : 0;
     this.dispatchEvent(
@@ -126,20 +169,26 @@ class ExpressionField extends React.Component {
   };
 
   selectPreviousSuggestion = () => {
-    const { filteredSuggestions, focusedSuggestion } = this.state;
-    const target = filteredSuggestions[focusedSuggestion - 1]
+    const { filteredFunctionSuggestions, focusedSuggestion } = this.state;
+    const target = filteredFunctionSuggestions[focusedSuggestion - 1]
       ? focusedSuggestion - 1
-      : filteredSuggestions.length - 1;
+      : filteredFunctionSuggestions.length - 1;
     this.dispatchEvent(
       { type: "SUGGESTION_FOCUSED", payload: target },
       this.focusOnActiveSuggestion
     );
   };
 
+  insertFunction = () => {
+    const [, , suggestionText] = this.getSuggestionText();
+    this.handleSuggestionClicked({ functionName: suggestionText });
+    this.handleCaretChange();
+  };
+
   /** @param {KeyboardEvent} e */
   handleKeyDown = e => {
     e.persist();
-    const { filteredSuggestions, focusedSuggestion } = this.state;
+    const { filteredFunctionSuggestions, focusedSuggestion } = this.state;
 
     switch (e.keyCode) {
       case KEYBOARD_KEYS.DOWN_ARROW:
@@ -148,9 +197,12 @@ class ExpressionField extends React.Component {
       case KEYBOARD_KEYS.UP_ARROW:
         e.preventDefault();
         return this.selectPreviousSuggestion();
+      case KEYBOARD_KEYS.OPEN_PARENTHESIS:
+        e.preventDefault();
+        return this.insertFunction();
       case KEYBOARD_KEYS.ENTER:
         e.preventDefault();
-        const suggestion = filteredSuggestions[focusedSuggestion];
+        const suggestion = filteredFunctionSuggestions[focusedSuggestion];
         return this.handleSuggestionClicked(suggestion);
       default:
         return;
@@ -165,14 +217,14 @@ class ExpressionField extends React.Component {
           className="Expression-Field__input"
           html={this.state.inputContent}
           onFocus={this.handleInputFocus}
-          // onBlur={this.handleInputBlur}
+          onBlur={this.handleInputBlur}
           onChange={this.handleUserInput}
           onKeyDown={this.handleKeyDown}
         />
-        {this.shouldRenderSuggestions() && (
+        {this.shouldRenderFunctionSuggestions() && (
           <ExpressionSuggestions
             ref={this.listRef}
-            suggestions={this.state.filteredSuggestions}
+            suggestions={this.state.filteredFunctionSuggestions}
             onSuggestionClicked={this.handleSuggestionClicked}
             onSuggestionFocusChange={this.handleSuggestionFocusChange}
             focusedSuggestionIndex={this.focusedSuggestion}
