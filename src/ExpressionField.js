@@ -105,6 +105,7 @@ class ExpressionField extends React.Component {
         filteredFunctionSuggestions: this.filteredFunctionSuggestions
       }
     });
+    this.handleCaretChange();
   };
 
   shouldRenderFunctionSuggestions = () => {
