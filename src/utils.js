@@ -87,3 +87,24 @@ export const getCurrentExpressionFunction = (expression, cursorPosition) => {
     functionEndPosition
   );
 };
+
+export const currentInputTextContainsFunction = inputText =>
+  inputText &&
+  !inputText.includes("[") &&
+  !inputText.includes('"') &&
+  !inputText.includes("'");
+
+export const isInsertingField = (text, cursorPosition) => {
+  if (!text) return false;
+  if (["]"].includes(text.charAt(cursorPosition - 1))) return false;
+
+  for (let i = cursorPosition; i >= 0; i--) {
+    if (["["].includes(text.charAt(i))) return true;
+    if (variableSplitters.includes(text.charAt(i))) return false;
+  }
+
+  return false;
+};
+
+export const insertText = (baseText, position, newText) =>
+  baseText.slice(0, position) + newText + baseText.slice(position);

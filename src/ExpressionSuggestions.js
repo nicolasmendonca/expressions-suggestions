@@ -25,8 +25,15 @@ class Suggestion extends React.PureComponent {
         key={suggestion.id}
         onMouseEnter={onSuggestionFocusChange}
         onMouseDown={this.handleMouseDown}
-        dangerouslySetInnerHTML={{ __html: this.suggestionHTML }}
-      />
+      >
+        <span
+          className="Expression-Suggestion-List-Item--function-name"
+          dangerouslySetInnerHTML={{ __html: this.suggestionHTML }}
+        />
+        <span className="Expression-Suggestion-List-Item--description">
+          {suggestion.description}
+        </span>
+      </li>
     );
   }
 }

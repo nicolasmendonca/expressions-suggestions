@@ -1,9 +1,10 @@
 import { suggestions } from "./constants";
+import { insertText } from "./utils";
 
 const initialState = {
   isInputFocused: false,
   inputContent: "",
-  focusedSuggestion: 0,
+  focusedFunctionSuggestion: 0,
   filteredFunctionSuggestions: suggestions,
   cursorPosition: 0
 };
@@ -14,7 +15,7 @@ export const expressionFieldReducer = (state = initialState, action) => {
       return {
         ...state,
         isInputFocused: true,
-        focusedSuggestion:
+        focusedFunctionSuggestion:
           state.filteredFunctionSuggestions.length === 0 ? -1 : 0
       };
     case "INPUT_BLURRED":
@@ -27,7 +28,8 @@ export const expressionFieldReducer = (state = initialState, action) => {
         action.payload.filteredFunctionSuggestions;
       return {
         ...state,
-        focusedSuggestion: filteredFunctionSuggestions.length === 0 ? -1 : 0,
+        focusedFunctionSuggestion:
+          filteredFunctionSuggestions.length === 0 ? -1 : 0,
         inputContent: action.payload.inputValue,
         filteredFunctionSuggestions
       };
@@ -39,8 +41,13 @@ export const expressionFieldReducer = (state = initialState, action) => {
     case "SUGGESTION_FOCUSED":
       return {
         ...state,
-        focusedSuggestion: action.payload
+        focusedFunctionSuggestion: action.payload
       };
+    // case "INSERT_FIELD_SUGGESTION":
+    //   return {
+    //     ...state,
+    //     inputContent: action.payload
+    //   };
     case "CURSOR_POSITION_CHANGED":
       return {
         ...state,

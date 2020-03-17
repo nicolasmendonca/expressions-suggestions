@@ -1,4 +1,4 @@
-import { getCurrentExpressionFunction } from "./utils";
+import { getCurrentExpressionFunction, isInsertingField } from "./utils";
 
 describe("expression", () => {
   test("[empty string]", () => {
@@ -50,5 +50,39 @@ describe("expression", () => {
         49
       )
     ).toBe("ADD");
+  });
+});
+
+describe("field", () => {
+  describe("isInsertingField", () => {
+    test("*empty_string*", () => {
+      expect(isInsertingField("", 0)).toBeFalsy();
+    });
+
+    test("ADD(#)", () => {
+      expect(isInsertingField("ADD", 4)).toBeFalsy();
+    });
+
+    test("ADD([#])", () => {
+      expect(isInsertingField("ADD([])", 5)).toBeTruthy();
+    });
+
+    test("ADD(#, [some_field])", () => {
+      expect(isInsertingField("ADD(, [some_field])", 4)).toBeFalsy();
+    });
+
+    test("ADD([some_field], #)", () => {
+      expect(isInsertingField("ADD([some_field], )", 18)).toBeFalsy();
+    });
+
+    test("ADD([some_field], [#)", () => {
+      expect(isInsertingField("ADD([some_field], [)", 19)).toBeTruthy();
+    });
+
+    test("ADD([some_field], [another_field]#)", () => {
+      expect(
+        isInsertingField("ADD([some_field], [another_field])", 33)
+      ).toBeFalsy();
+    });
   });
 });

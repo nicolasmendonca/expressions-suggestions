@@ -34,7 +34,7 @@ $fieldTextColor: #808080;
       margin: 0;
       list-style: none;
       padding: 0;
-      max-height: 100px;
+      max-height: 180px;
       overflow-y: auto;
       overflow-x: hidden;
     }
@@ -44,6 +44,9 @@ $fieldTextColor: #808080;
       text-align: left;
       padding: 0 12px;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      padding: 6px 8px;
 
       &.hasFocus {
         background-color: $focusBgColor;
@@ -71,7 +74,7 @@ $fieldTextColor: #808080;
 
   &--function-name-box {
     background-color: $focusBgColor;
-    padding: 4px;
+    padding: 4px 8px;
   
   }
 
@@ -88,7 +91,7 @@ $fieldTextColor: #808080;
 
   &--argument-list {
     list-style: none;
-    padding: 0 4px;
+    padding: 0 8px;
     margin: 8px 0;
   }
 
