@@ -99,7 +99,8 @@ export const isInsertingField = (text, cursorPosition) => {
   if (["]"].includes(text.charAt(cursorPosition - 1))) return false;
 
   for (let i = cursorPosition; i >= 0; i--) {
-    if (["["].includes(text.charAt(i))) return true;
+    if (["["].includes(text.charAt(i)))
+      return text.substring(i, cursorPosition);
     if (variableSplitters.includes(text.charAt(i))) return false;
   }
 

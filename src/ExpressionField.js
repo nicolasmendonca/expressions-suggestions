@@ -5,16 +5,17 @@ import ExpressionSuggestions from "./ExpressionSuggestions";
 import {
   suggestions,
   KEYBOARD_KEYS,
-  variableSplitters
-  // fields
+  variableSplitters,
+  fields
 } from "./constants";
 import { expressionFieldReducer } from "./expressionFieldReducer";
 import {
   getCaretPosition,
   setCaretPosition,
   getCurrentExpressionFunction,
-  currentInputTextContainsFunction
-  // insertText
+  currentInputTextContainsFunction,
+  insertText,
+  isInsertingField
 } from "./utils";
 import FunctionDetails from "./FunctionDetails";
 
@@ -84,7 +85,7 @@ class ExpressionField extends React.Component {
     });
   };
 
-  /* getFieldSuggestion = searchTerm => {
+  getFieldSuggestion = searchTerm => {
     const sanitized = searchTerm.replace(/\[|\]/g, () => "");
     const [result] = new Fuse(fields, {
       minMatchCharLength: 1,
@@ -92,16 +93,49 @@ class ExpressionField extends React.Component {
       threshold: 0
     }).search(sanitized);
     return result;
-  }; */
+  };
 
   handleCaretChange = () =>
     setTimeout(() => {
-      const caretPosition = getCaretPosition(this.inputRef.current);
+      const { current: inputRef } = this.inputRef;
+      const caretPosition = getCaretPosition(inputRef);
       this.dispatchEvent({
         type: "CURSOR_POSITION_CHANGED",
         payload: caretPosition
       });
+
+      const insertedTextField = isInsertingField(
+        inputRef.innerText,
+        caretPosition
+      );
+      if (insertedTextField) {
+        this.updateFieldSuggestion(insertedTextField);
+      } else {
+        this.removeFieldSuggestion();
+      }
     }, 50);
+
+  removeFieldSuggestion = () => {
+    const fieldSuggestion = this.inputRef.current.querySelector(
+      ".field-suggestion"
+    );
+    if (fieldSuggestion) {
+      fieldSuggestion.innerHTML = "";
+    }
+  };
+
+  updateFieldSuggestion = insertedTextField => {
+    const suggestedField = this.getFieldSuggestion(insertedTextField);
+    try {
+      window
+        .getSelection()
+        .focusNode.parentElement.querySelector(
+          ".field-suggestion"
+        ).innerText = suggestedField;
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   /** @param {FocusEvent} e */
   handleInputFocus = e => {
@@ -160,20 +194,6 @@ class ExpressionField extends React.Component {
     }
     return [0, cursorPosition, innerText];
   };
-
-  /*   insertField = () => {
-    const input = this.inputRef.current;
-    const caretPosition = getCaretPosition(input);
-    const fieldHTML = `<span class="field">[]</span>`;
-
-    this.dispatchEvent({
-      type: "INSERT_FIELD_SUGGESTION",
-      payload: insertText(input.innerText, caretPosition, fieldHTML)
-    });
-    setTimeout(() => {
-      setCaretPosition(input, caretPosition + 1);
-    }, 50);
-  }; */
 
   handleSuggestionClicked = suggestion => {
     const { innerText } = this.inputRef.current;
@@ -242,6 +262,25 @@ class ExpressionField extends React.Component {
     this.handleCaretChange();
   };
 
+  insertField = e => {
+    console.warn(e.target.innerHTML);
+    const { current: inputRef } = this.inputRef;
+    const caretPosition = getCaretPosition(inputRef);
+    this.dispatchEvent(
+      {
+        type: "INSERT_EMPTY_FIELD",
+        payload: insertText(
+          inputRef.innerHTML,
+          caretPosition,
+          `[<span class="field-suggestion"></span>]`
+        )
+      },
+      () => {
+        setCaretPosition(inputRef, caretPosition + 1);
+      }
+    );
+  };
+
   /** @param {KeyboardEvent} e */
   handleKeyDown = e => {
     e.persist();
@@ -260,6 +299,9 @@ class ExpressionField extends React.Component {
       case KEYBOARD_KEYS.RIGHT_ARROW:
       case KEYBOARD_KEYS.LEFT_ARROW:
         return this.handleCaretChange();
+      case KEYBOARD_KEYS.OPEN_BRACKET:
+        e.preventDefault();
+        return this.insertField(e);
       case KEYBOARD_KEYS.OPEN_PARENTHESIS:
         e.preventDefault();
         return this.insertFunction();

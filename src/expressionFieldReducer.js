@@ -34,6 +34,7 @@ export const expressionFieldReducer = (state = initialState, action) => {
         filteredFunctionSuggestions
       };
     case "SUGGESTION_CLICKED":
+    case "INSERT_EMPTY_FIELD":
       return {
         ...state,
         inputContent: action.payload
@@ -43,11 +44,6 @@ export const expressionFieldReducer = (state = initialState, action) => {
         ...state,
         focusedFunctionSuggestion: action.payload
       };
-    // case "INSERT_FIELD_SUGGESTION":
-    //   return {
-    //     ...state,
-    //     inputContent: action.payload
-    //   };
     case "CURSOR_POSITION_CHANGED":
       return {
         ...state,
