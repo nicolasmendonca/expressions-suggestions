@@ -98,8 +98,9 @@ export const isInsertingField = (text, cursorPosition) => {
   if (!text) return false;
   if (["]"].includes(text.charAt(cursorPosition - 1))) return false;
 
-  for (let i = cursorPosition; i >= 0; i--) {
-    if (["["].includes(text.charAt(i))) return true;
+  for (let i = cursorPosition - 1; i >= 0; i--) {
+    if (["["].includes(text.charAt(i)))
+      return text.substring(i, cursorPosition);
     if (variableSplitters.includes(text.charAt(i))) return false;
   }
 
@@ -108,3 +109,10 @@ export const isInsertingField = (text, cursorPosition) => {
 
 export const insertText = (baseText, position, newText) =>
   baseText.slice(0, position) + newText + baseText.slice(position);
+
+/**
+ * Waits for the component to be updated before making any changes
+ * or reading the caret position.
+ * @param {Function} callback
+ */
+export const manipulateCaretPosition = callback => setTimeout(callback, 0);

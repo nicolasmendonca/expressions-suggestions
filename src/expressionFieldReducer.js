@@ -1,5 +1,4 @@
 import { suggestions } from "./constants";
-import { insertText } from "./utils";
 
 const initialState = {
   isInputFocused: false,
@@ -30,29 +29,18 @@ export const expressionFieldReducer = (state = initialState, action) => {
         ...state,
         focusedFunctionSuggestion:
           filteredFunctionSuggestions.length === 0 ? -1 : 0,
-        inputContent: action.payload.inputValue,
         filteredFunctionSuggestions
-      };
-    case "SUGGESTION_CLICKED":
-      return {
-        ...state,
-        inputContent: action.payload
       };
     case "SUGGESTION_FOCUSED":
       return {
         ...state,
         focusedFunctionSuggestion: action.payload
       };
-    // case "INSERT_FIELD_SUGGESTION":
+    // case "CURSOR_POSITION_CHANGED":
     //   return {
     //     ...state,
-    //     inputContent: action.payload
+    //     cursorPosition: action.payload
     //   };
-    case "CURSOR_POSITION_CHANGED":
-      return {
-        ...state,
-        cursorPosition: action.payload
-      };
     default:
       return state;
   }

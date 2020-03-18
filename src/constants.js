@@ -99,6 +99,7 @@ export const fields = [
 ];
 
 export const KEYBOARD_KEYS = {
+  TAB: 9,
   DOWN_ARROW: 40,
   UP_ARROW: 38,
   LEFT_ARROW: 37,

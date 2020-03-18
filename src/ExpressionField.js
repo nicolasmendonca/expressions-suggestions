@@ -1,22 +1,25 @@
 import React from "react";
-import ContentEditable from "react-contenteditable";
 import Fuse from "fuse.js";
 import ExpressionSuggestions from "./ExpressionSuggestions";
 import {
   suggestions,
   KEYBOARD_KEYS,
-  variableSplitters
-  // fields
+  variableSplitters,
+  fields
 } from "./constants";
 import { expressionFieldReducer } from "./expressionFieldReducer";
 import {
   getCaretPosition,
   setCaretPosition,
   getCurrentExpressionFunction,
-  currentInputTextContainsFunction
-  // insertText
+  currentInputTextContainsFunction,
+  isInsertingField,
+  manipulateCaretPosition
 } from "./utils";
 import FunctionDetails from "./FunctionDetails";
+
+const sanitizeFieldTextSeach = textSearch =>
+  textSearch.replace(/\[|\]/g, () => "");
 
 class ExpressionField extends React.Component {
   constructor(props) {
@@ -25,6 +28,21 @@ class ExpressionField extends React.Component {
     this.inputRef = React.createRef();
     this.listRef = React.createRef();
     this.state = expressionFieldReducer(undefined, {});
+
+    this.functionsFuse = new Fuse(suggestions, {
+      shouldSort: true,
+      threshold: 0.6,
+      location: 0,
+      distance: 100,
+      maxPatternLength: 32,
+      minMatchCharLength: 1,
+      keys: ["functionName"]
+    });
+    this.fieldsFuse = new Fuse(fields, {
+      minMatchCharLength: 1,
+      keys: ["id", "field"],
+      threshold: 0
+    });
 
     this.eventsToSubscribeForCaretChange =
       "keypress mousedown touchstart input paste cut mousemove select selectstart";
@@ -35,17 +53,8 @@ class ExpressionField extends React.Component {
   }
 
   get filteredFunctionSuggestions() {
-    const options = {
-      shouldSort: true,
-      threshold: 0.6,
-      location: 0,
-      distance: 100,
-      maxPatternLength: 32,
-      minMatchCharLength: 1,
-      keys: ["functionName"]
-    };
     const [, , cleanSearchText] = this.getActiveWrittenFunction();
-    const matches = new Fuse(suggestions, options).search(cleanSearchText);
+    const matches = this.functionsFuse.search(cleanSearchText);
     return cleanSearchText.length === 0 ? suggestions : matches;
   }
 
@@ -60,6 +69,15 @@ class ExpressionField extends React.Component {
     const { currentFunctionName } = this;
     if (!currentFunctionName) return null;
     return suggestions.find(sugg => sugg.functionName === currentFunctionName);
+  }
+
+  get fieldTextSearch() {
+    const caretPosition = getCaretPosition(this.inputRef.current);
+    const fieldTextSearch = isInsertingField(
+      this.inputRef.current.innerText,
+      caretPosition
+    );
+    return fieldTextSearch;
   }
 
   componentDidMount() {
@@ -80,28 +98,72 @@ class ExpressionField extends React.Component {
     const prevState = this.state;
     this.setState(expressionFieldReducer(prevState, action), (...params) => {
       if (callback) callback(...params);
-      console.log({ prevState, action, state: this.state });
     });
   };
 
-  /* getFieldSuggestion = searchTerm => {
-    const sanitized = searchTerm.replace(/\[|\]/g, () => "");
-    const [result] = new Fuse(fields, {
-      minMatchCharLength: 1,
-      keys: ["id", "field"],
-      threshold: 0
-    }).search(sanitized);
+  getFieldSuggestion = (searchTerm = "") => {
+    const sanitized = sanitizeFieldTextSeach(searchTerm);
+    const [result] = this.fieldsFuse.search(sanitized);
     return result;
-  }; */
+  };
 
-  handleCaretChange = () =>
-    setTimeout(() => {
-      const caretPosition = getCaretPosition(this.inputRef.current);
-      this.dispatchEvent({
-        type: "CURSOR_POSITION_CHANGED",
-        payload: caretPosition
-      });
-    }, 50);
+  handleCaretChange = () => {
+    const { fieldTextSearch } = this;
+    if (fieldTextSearch !== false) {
+      this.updateFieldSuggestion(fieldTextSearch);
+    } else {
+      this.removeFieldSuggestion();
+    }
+  };
+
+  removeFieldSuggestion = () => {
+    const fieldSuggestion = this.inputRef.current.querySelector(
+      ".field-suggestion"
+    );
+    if (fieldSuggestion) fieldSuggestion.remove();
+  };
+
+  updateFieldSuggestion = fieldTextSearch => {
+    const { current: inputRef } = this.inputRef;
+    const suggestion = this.getFieldSuggestion(fieldTextSearch);
+    const newEl = document.createElement("span");
+    const fieldSuggestionFlement =
+      inputRef.querySelector(".field-suggestion") || newEl;
+    fieldSuggestionFlement.className = "field-suggestion";
+    fieldSuggestionFlement.innerText = suggestion
+      ? suggestion.field.substring(fieldTextSearch.length - 1) + "]"
+      : "";
+    const inputSearchElement = inputRef.childNodes[0];
+
+    const sel = window.getSelection();
+    let range = sel.getRangeAt(0);
+
+    // sets the cursor on the last position right before the suggestion
+    range.collapse(true);
+    range.insertNode(fieldSuggestionFlement);
+    range = range.cloneRange();
+    range.selectNodeContents(inputSearchElement);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  };
+
+  insertFieldSuggestion = fieldTextSearch => {
+    const suggestion = this.getFieldSuggestion(fieldTextSearch);
+    if (!suggestion) return;
+    const { current: inputRef } = this.inputRef;
+    this.removeFieldSuggestion();
+    const caretPosition = getCaretPosition(inputRef);
+    const leftText = inputRef.innerText.substring(
+      0,
+      caretPosition - fieldTextSearch.length
+    );
+    const rightText = inputRef.innerText.substring(caretPosition);
+    inputRef.innerText = `${leftText}[${suggestion.field}]${rightText}`;
+    manipulateCaretPosition(() =>
+      setCaretPosition(inputRef, leftText.length + suggestion.field.length + 2)
+    );
+  };
 
   /** @param {FocusEvent} e */
   handleInputFocus = e => {
@@ -116,7 +178,6 @@ class ExpressionField extends React.Component {
 
   /** @param {KeyboardEvent} e  */
   handleUserInput = e => {
-    // console.warn(e)
     this.dispatchEvent({
       type: "USER_INPUT",
       payload: {
@@ -161,20 +222,6 @@ class ExpressionField extends React.Component {
     return [0, cursorPosition, innerText];
   };
 
-  /*   insertField = () => {
-    const input = this.inputRef.current;
-    const caretPosition = getCaretPosition(input);
-    const fieldHTML = `<span class="field">[]</span>`;
-
-    this.dispatchEvent({
-      type: "INSERT_FIELD_SUGGESTION",
-      payload: insertText(input.innerText, caretPosition, fieldHTML)
-    });
-    setTimeout(() => {
-      setCaretPosition(input, caretPosition + 1);
-    }, 50);
-  }; */
-
   handleSuggestionClicked = suggestion => {
     const { innerText } = this.inputRef.current;
     const [start, end] = this.getActiveWrittenFunction();
@@ -185,14 +232,9 @@ class ExpressionField extends React.Component {
       `)${rightText}`
     ];
 
-    this.dispatchEvent(
-      { type: "SUGGESTION_CLICKED", payload: newExpression.join("") },
-      () => {
-        setTimeout(() => {
-          this.inputRef.current.focus();
-          setCaretPosition(this.inputRef.current, newExpression[0].length);
-        }, 50);
-      }
+    this.inputRef.current.innerText = newExpression.join("");
+    manipulateCaretPosition(() =>
+      setCaretPosition(this.inputRef.current, newExpression[0].length)
     );
     this.handleCaretChange();
   };
@@ -245,6 +287,7 @@ class ExpressionField extends React.Component {
   /** @param {KeyboardEvent} e */
   handleKeyDown = e => {
     e.persist();
+    // console.warn(e);
     const {
       filteredFunctionSuggestions,
       focusedFunctionSuggestion
@@ -264,10 +307,14 @@ class ExpressionField extends React.Component {
         e.preventDefault();
         return this.insertFunction();
       case KEYBOARD_KEYS.ENTER:
+      case KEYBOARD_KEYS.TAB:
         e.preventDefault();
         const suggestion =
           filteredFunctionSuggestions[focusedFunctionSuggestion];
-        return this.handleSuggestionClicked(suggestion);
+        if (suggestion) this.handleSuggestionClicked(suggestion);
+        if (this.fieldTextSearch !== false)
+          this.insertFieldSuggestion(this.fieldTextSearch);
+        return;
       default:
         return;
     }
@@ -276,13 +323,14 @@ class ExpressionField extends React.Component {
   render() {
     return (
       <div className="Expression-Field">
-        <ContentEditable
-          innerRef={this.inputRef}
+        <div
+          contentEditable={true}
+          ref={this.inputRef}
           className="Expression-Field__input"
           html={this.state.inputContent}
           onFocus={this.handleInputFocus}
           // onBlur={this.handleInputBlur}
-          onChange={this.handleUserInput}
+          onKeyUp={this.handleUserInput}
           onKeyDown={this.handleKeyDown}
         />
         {this.shouldRenderFunctionSuggestions() && (
