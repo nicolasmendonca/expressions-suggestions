@@ -30,9 +30,6 @@ class Suggestion extends React.PureComponent {
           className="Expression-Suggestion-List-Item--function-name"
           dangerouslySetInnerHTML={{ __html: this.suggestionHTML }}
         />
-        <span className="Expression-Suggestion-List-Item--description">
-          {suggestion.description}
-        </span>
       </li>
     );
   }

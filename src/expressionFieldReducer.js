@@ -36,11 +36,6 @@ export const expressionFieldReducer = (state = initialState, action) => {
         ...state,
         focusedFunctionSuggestion: action.payload
       };
-    // case "CURSOR_POSITION_CHANGED":
-    //   return {
-    //     ...state,
-    //     cursorPosition: action.payload
-    //   };
     default:
       return state;
   }
