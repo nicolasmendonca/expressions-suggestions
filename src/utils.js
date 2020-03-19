@@ -88,12 +88,6 @@ export const getCurrentExpressionFunction = (expression, cursorPosition) => {
   );
 };
 
-export const currentInputTextContainsFunction = inputText =>
-  inputText &&
-  !inputText.includes("[") &&
-  !inputText.includes('"') &&
-  !inputText.includes("'");
-
 export const isInsertingField = (text, cursorPosition) => {
   if (!text) return false;
   if (["]"].includes(text.charAt(cursorPosition - 1))) return false;

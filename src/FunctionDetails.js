@@ -12,7 +12,7 @@ class FunctionDetails extends React.Component {
           <p
             className="FunctionDetails--function-name"
             dangerouslySetInnerHTML={{
-              __html: `${functionExpression.functionName}(${args.join(", ")})`
+              __html: `${functionExpression.name}(${args.join(", ")})`
             }}
           />
           <p className="functionDetails--function-description">

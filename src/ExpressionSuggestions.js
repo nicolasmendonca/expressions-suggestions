@@ -4,10 +4,14 @@ import classNames from "classnames";
 class Suggestion extends React.PureComponent {
   get suggestionHTML() {
     const { suggestion } = this.props;
-    let argumentsHTML = suggestion.arguments
-      .map(argument => `<span class="grey">[${argument.name}]</span>`)
-      .join(", ");
-    return `${suggestion.functionName}(${argumentsHTML})`;
+    if (suggestion.type === "function") {
+      let argumentsHTML = suggestion.arguments
+        .map(argument => `<span class="grey">[${argument.name}]</span>`)
+        .join(", ");
+      return `${suggestion.name}(${argumentsHTML})`;
+    } else {
+      return `[${suggestion.name}]`;
+    }
   }
 
   handleMouseDown = e => {
@@ -41,7 +45,7 @@ class ExpressionSuggestions extends React.Component {
       <ul ref={this.props.innerRef} className="Expression-Suggestion-List">
         {this.props.suggestions.map((suggestion, index) => (
           <Suggestion
-            key={suggestion.id}
+            key={suggestion.name}
             suggestion={suggestion}
             hasFocus={index === this.props.focusedSuggestionIndex}
             onSuggestionFocusChange={() =>

@@ -3,6 +3,19 @@
   text-align: center;
 }
 
+.tutorial {
+  text-align: left;
+
+  p {
+    font-weight: bold;
+    margin: 12px 0 0 0;
+  }
+
+  ul {
+    margin: 6px 0 0;
+  }
+}
+
 $width: 800px;
 $focusBgColor: #F5F5F5;
 $fieldTextColor: #808080;
@@ -43,6 +56,7 @@ $functionListBorderColor: #e8e8e8;
       max-height: 180px;
       overflow-y: auto;
       overflow-x: hidden;
+      z-index: 1;
     }
 
     .Expression-Suggestion-List-Item {
@@ -53,6 +67,7 @@ $functionListBorderColor: #e8e8e8;
       display: flex;
       flex-direction: column;
       padding: 6px 8px;
+      background-color: white;
 
       &.hasFocus {
         background-color: $focusBgColor;
@@ -73,6 +88,7 @@ $functionListBorderColor: #e8e8e8;
   box-sizing: border-box;
   width: $width;
   text-align: start;
+  background-color: white;
 
   p {
     margin: 0;

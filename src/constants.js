@@ -1,7 +1,8 @@
-export const suggestions = [
+export const functions = [
   {
     id: 1,
-    functionName: "LENGTH",
+    name: "LENGTH",
+    type: "function",
     description: "Returns the amount of elements inside a list or string",
     arguments: [
       {
@@ -12,7 +13,8 @@ export const suggestions = [
   },
   {
     id: 2,
-    functionName: "CONCATENATE",
+    name: "CONCATENATE",
+    type: "function",
     description: "Prints two fields together",
     arguments: [
       {
@@ -27,7 +29,8 @@ export const suggestions = [
   },
   {
     id: 3,
-    functionName: "ADD",
+    name: "ADD",
+    type: "function",
     description: "Performs the addition of two values",
     arguments: [
       {
@@ -42,7 +45,8 @@ export const suggestions = [
   },
   {
     id: 4,
-    functionName: "SUBTRACT",
+    name: "SUBTRACT",
+    type: "function",
     description: "Performs the subtraction of two numbers",
     arguments: [
       {
@@ -57,7 +61,8 @@ export const suggestions = [
   },
   {
     id: 5,
-    functionName: "MULTIPLY",
+    name: "MULTIPLY",
+    type: "function",
     description: "Performs the multiplication of two values",
     arguments: [
       {
@@ -72,7 +77,8 @@ export const suggestions = [
   },
   {
     id: 6,
-    functionName: "DIVIDE",
+    name: "DIVIDE",
+    type: "function",
     description: "Performs the division of two numbers",
     arguments: [
       {
@@ -89,12 +95,14 @@ export const suggestions = [
 
 export const fields = [
   {
-    id: 1,
-    field: "job_title"
+    id: 7,
+    name: "job_title",
+    type: "field"
   },
   {
-    id: 2,
-    field: "job_description"
+    id: 8,
+    name: "job_description",
+    type: "field"
   }
 ];
 
