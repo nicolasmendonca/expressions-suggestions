@@ -120,7 +120,6 @@ class ExpressionField extends React.Component {
     const prevState = this.state;
     this.setState(expressionFieldReducer(prevState, action), (...params) => {
       if (callback) callback(...params);
-      console.log(this.inputRef.current.innerText);
     });
   };
 
