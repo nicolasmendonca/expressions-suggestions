@@ -11,6 +11,21 @@ import {
 } from "./utils";
 import FunctionDetails from "./FunctionDetails";
 
+/**
+ * @typedef {Object} Argument
+ * @property {string} name
+ * @property {string} description
+ */
+
+/**
+ * @typedef {Object} Suggestion
+ * @property {string} name
+ * @property {number} [id]
+ * @property {string} [description]
+ * @property {Argument[]} [arguments]
+ * @property {'field'|'function'} type
+ */
+
 class ExpressionField extends React.Component {
   constructor(props) {
     super(props);
@@ -41,9 +56,8 @@ class ExpressionField extends React.Component {
       minMatchCharLength: 1,
       keys: ["name"]
     });
-    this.subscriptionEvents = "mousedown touchstart input paste cut mousemove select selectstart".split(
-      " "
-    );
+    this.subscriptionEvents =
+      "mousedown touchstart input paste cut mousemove select selectstart";
   }
 
   componentDidUpdate(prevProps) {
@@ -65,13 +79,11 @@ class ExpressionField extends React.Component {
     }
   }
 
-  handleCaretChange = () => this.forceUpdate();
-
   componentDidMount() {
     const { current: inputRef } = this.inputRef;
     const { initialValue, value } = this.props;
 
-    this.subscriptionEvents.forEach(eventName => {
+    this.subscriptionEvents.split(" ").forEach(eventName => {
       inputRef.addEventListener(eventName, this.handleCaretChange);
     });
 
@@ -82,25 +94,22 @@ class ExpressionField extends React.Component {
 
   componentWillUnmount() {
     const { current: inputRef } = this.inputRef;
-    this.subscriptionEvents.forEach(eventName => {
+    this.subscriptionEvents.split(" ").forEach(eventName => {
       inputRef.removeEventListener(eventName, this.handleCaretChange);
     });
   }
 
-  get focusedSuggestion() {
+  get focusedSuggestionIndex() {
     return this.state.focusedSuggestion;
   }
 
-  get filteredFieldSuggestions() {
-    const [, , cleanSearchText] = this.getActiveTextSearch();
-    return this.fieldsFuse.search(cleanSearchText);
-  }
-
+  /** @returns {suggestion[]} suggestions */
   get filteredSuggestions() {
     const [, , cleanSearchText] = this.getActiveTextSearch();
     return this.suggestionsFuse.search(cleanSearchText);
   }
 
+  /** @returns {string|null} */
   get currentFunctionName() {
     if (!this.inputRef.current) return null;
     const { innerText } = this.inputRef.current;
@@ -108,6 +117,7 @@ class ExpressionField extends React.Component {
     return getCurrentExpressionFunction(innerText, cursorPosition);
   }
 
+  /** @returns {string|null} */
   get currentFunction() {
     const { currentFunctionName } = this;
     if (!currentFunctionName) return null;
@@ -116,6 +126,10 @@ class ExpressionField extends React.Component {
     return match;
   }
 
+  /**
+   * @param {{type: string, payload?: any}} action
+   * @param {Function} callback
+   */
   dispatchEvent = (action, callback) => {
     const prevState = this.state;
     this.setState(expressionFieldReducer(prevState, action), (...params) => {
@@ -134,12 +148,14 @@ class ExpressionField extends React.Component {
     this.dispatchEvent({ type: "INPUT_BLURRED" });
   };
 
+  /** @returns {boolean} */
   shouldRenderSuggestions = () => {
     return (
       this.state.isInputFocused && this.state.filteredSuggestions.length > 0
     );
   };
 
+  /** @returns {boolean} */
   shouldRenderFunctionDetails = () => {
     const { currentFunction } = this;
 
@@ -150,6 +166,7 @@ class ExpressionField extends React.Component {
     );
   };
 
+  /** @returns {[number, number, string]} [startPosition, endPosition, match] */
   getActiveTextSearch = () => {
     if (!this.inputRef.current) return [0, 0, ""];
     const { innerText } = this.inputRef.current;
@@ -177,6 +194,7 @@ class ExpressionField extends React.Component {
     return result;
   };
 
+  /** @param {Partial<Suggestion>} suggestion */
   handleSuggestionClicked = suggestion => {
     const { innerText } = this.inputRef.current;
     const [start, end] = this.getActiveTextSearch();
@@ -194,6 +212,9 @@ class ExpressionField extends React.Component {
     });
   };
 
+  handleCaretChange = () => this.forceUpdate();
+
+  /** @param {number} index */
   handleSuggestionFocusChange = index => {
     this.dispatchEvent({ type: "SUGGESTION_FOCUSED", payload: index });
   };
@@ -286,7 +307,7 @@ class ExpressionField extends React.Component {
             suggestions={this.state.filteredSuggestions}
             onSuggestionClicked={this.handleSuggestionClicked}
             onSuggestionFocusChange={this.handleSuggestionFocusChange}
-            focusedSuggestionIndex={this.focusedSuggestion}
+            focusedSuggestionIndex={this.focusedSuggestionIndex}
           />
         )}
         {this.shouldRenderFunctionDetails() && (
