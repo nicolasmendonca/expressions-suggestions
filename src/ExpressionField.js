@@ -59,15 +59,25 @@ class ExpressionField extends React.Component {
         keys: ["name"]
       });
     }
+
+    if (prevProps.value !== this.props.value) {
+      this.inputRef.current.innerText = this.props.value;
+    }
   }
 
   handleCaretChange = () => this.forceUpdate();
 
   componentDidMount() {
     const { current: inputRef } = this.inputRef;
+    const { initialValue, value } = this.props;
+
     this.subscriptionEvents.forEach(eventName => {
       inputRef.addEventListener(eventName, this.handleCaretChange);
     });
+
+    if (initialValue || value) {
+      this.inputRef.current.innerText = initialValue || value;
+    }
   }
 
   componentWillUnmount() {
@@ -110,6 +120,7 @@ class ExpressionField extends React.Component {
     const prevState = this.state;
     this.setState(expressionFieldReducer(prevState, action), (...params) => {
       if (callback) callback(...params);
+      console.log(this.inputRef.current.innerText);
     });
   };
 

@@ -6,7 +6,10 @@ import { fields, functions } from "./constants";
 export default function App() {
   return (
     <div className="App">
-      <ExpressionField suggestions={[...fields, ...functions]} />
+      <ExpressionField
+        initialValue=""
+        suggestions={[...fields, ...functions]}
+      />
       <div className="tutorial">
         <p>Available fields</p>
         <ul>
