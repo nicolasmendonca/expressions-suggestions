@@ -21,6 +21,7 @@ $focusBgColor: #F5F5F5;
 $fieldTextColor: #808080;
 $borderColor: #CCCCCC;
 $functionListBorderColor: #e8e8e8;
+$activeSuggestionTransitionDuration: 0.35s; // is this too slow?
 
 .Expression-Field {
   position: relative;
@@ -68,9 +69,20 @@ $functionListBorderColor: #e8e8e8;
       flex-direction: column;
       padding: 6px 8px;
       background-color: white;
+      min-height: 48px; // normalize suggestion heights
+      transition: background-color $activeSuggestionTransitionDuration ease-in-out;
+
+      &--description {
+        opacity: 0;
+        transition: opacity $activeSuggestionTransitionDuration ease-in-out;
+      }
 
       &.hasFocus {
         background-color: $focusBgColor;
+
+        .Expression-Suggestion-List-Item--description {
+          opacity: 1;
+        }
       }
 
       & .grey {
