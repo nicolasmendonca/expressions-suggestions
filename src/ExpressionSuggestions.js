@@ -10,7 +10,7 @@ class Suggestion extends React.PureComponent {
         .join(", ");
       return `${suggestion.name}(${argumentsHTML})`;
     } else {
-      return `[${suggestion.name}]`;
+      return suggestion.name;
     }
   }
 

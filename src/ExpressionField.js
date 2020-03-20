@@ -19,6 +19,19 @@ class ExpressionField extends React.Component {
     this.listRef = React.createRef();
     this.state = expressionFieldReducer(undefined, {});
 
+    /**
+     * In order to insert the fields correctly, they must be already wrapped inside
+     * brackets. In case they are not, we can do something like
+     * ```js
+     * const newSuggestions = this.props.suggestions
+     *  .map(
+     * ({ type, name, ...suggestion }) => type === 'field'
+     *  ? { type, name: `[${name}]`,  ...suggestion }
+     *  : { type, name, ...suggestion }
+     * )
+     * this.suggestionsFuse = new Fuse(newSuggestions, someConfig)
+     * ```
+     */
     this.suggestionsFuse = new Fuse(this.props.suggestions, {
       shouldSort: true,
       threshold: 0.6,
@@ -165,7 +178,7 @@ class ExpressionField extends React.Component {
     const newExpression =
       suggestion.type === "function"
         ? [`${leftText}${suggestion.name}(`, `)${rightText}`]
-        : [`${leftText}[${suggestion.name}]`, rightText];
+        : [`${leftText}${suggestion.name}`, rightText];
 
     this.inputRef.current.innerText = newExpression.join("");
 

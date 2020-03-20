@@ -96,12 +96,12 @@ export const functions = [
 export const fields = [
   {
     id: 7,
-    name: "job_title",
+    name: "[job_title]",
     type: "field"
   },
   {
     id: 8,
-    name: "job_description",
+    name: "[job_description]",
     type: "field"
   }
 ];
