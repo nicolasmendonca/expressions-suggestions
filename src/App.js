@@ -11,7 +11,7 @@ export default function App() {
         <p>Available fields</p>
         <ul>
           {fields.map(field => (
-            <li key={field.name}>[{field.name}]</li>
+            <li key={field.name}>{field.name}</li>
           ))}
         </ul>
         <p>Available functions</p>
