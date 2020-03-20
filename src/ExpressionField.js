@@ -125,11 +125,8 @@ class ExpressionField extends React.Component {
   };
 
   shouldRenderSuggestions = () => {
-    const activeWrittenFunction = this.getActiveTextSearch();
     return (
-      this.state.isInputFocused &&
-      this.state.filteredSuggestions.length > 0 &&
-      !activeWrittenFunction[2].includes("]")
+      this.state.isInputFocused && this.state.filteredSuggestions.length > 0
     );
   };
 
