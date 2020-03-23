@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
+    "caret-pos": "1.2.2",
     "classnames": "2.2.6",
     "fuse.js": "4.0.4-beta",
     "react": "16.12.0",

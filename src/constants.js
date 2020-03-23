@@ -110,12 +110,8 @@ export const KEYBOARD_KEYS = {
   TAB: 9,
   DOWN_ARROW: 40,
   UP_ARROW: 38,
-  LEFT_ARROW: 37,
-  RIGHT_ARROW: 39,
-  OPEN_BRACKET: 219,
-  CLOSE_BRACKET: 221,
   ENTER: 13,
-  OPEN_PARENTHESIS: 57
+  ESCAPE: 27
 };
 
 export const variableSplitters = [" ", ",", "(", ")"];

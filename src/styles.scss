@@ -25,6 +25,7 @@ $activeSuggestionTransitionDuration: 0.35s; // is this too slow?
 
 .Expression-Field {
   position: relative;
+  text-align: initial;
 
   &__input {
       box-sizing: border-box;
